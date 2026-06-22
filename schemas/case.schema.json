@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/vignesh/procurement-pattern-library/schemas/case.schema.json",
+  "title": "Application case front-matter",
+  "type": "object",
+  "required": ["id", "pattern_id", "domain", "upstream_artifact", "opened_at"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "pattern_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["procurement", "supply-chain", "mechanism-design", "ai-build"]
+    },
+    "upstream_artifact": {
+      "type": "string",
+      "pattern": "^(repo://|file://|https://)"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "outcome": {
+      "type": ["string", "null"],
+      "enum": [
+        "transferred-cleanly",
+        "transferred-with-friction",
+        "did-not-transfer",
+        "still-pending",
+        null
+      ]
+    }
+  }
+}

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "procurement-pattern-library"
+version = "0.1.0"
+description = "Typed library of procurement / supply-chain / mechanism-design patterns with cross-applications to AI builds, plus a CLI for validation, scoring, and quarterly retros."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [
+  { name = "Vignesh" },
+]
+dependencies = [
+  "pyyaml>=6.0",
+]
+
+[project.scripts]
+procurement-pattern-library = "procurement_pattern_library.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+]
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["procurement_pattern_library"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/vignesh/procurement-pattern-library/schemas/retro.schema.json",
+  "title": "Scoring-run ledger row front-matter",
+  "type": "object",
+  "required": ["run_id", "generated_at", "quarter", "friction_weight", "inputs", "scores"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-Q[1-4]-[a-z][a-z0-9-]*$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "quarter": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-Q[1-4]$"
+    },
+    "friction_weight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "inputs": {
+      "type": "object",
+      "required": ["patterns", "cases"],
+      "additionalProperties": false,
+      "properties": {
+        "patterns": { "type": "integer", "minimum": 0 },
+        "cases": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "scores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pattern_id", "case_count", "transfer_index", "strict_index", "outcomes"],
+        "additionalProperties": false,
+        "properties": {
+          "pattern_id": { "type": "string" },
+          "case_count": { "type": "integer", "minimum": 0 },
+          "transfer_index": { "type": ["number", "null"] },
+          "strict_index": { "type": ["number", "null"] },
+          "outcomes": {
+            "type": "object",
+            "additionalProperties": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}
