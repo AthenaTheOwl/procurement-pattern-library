@@ -1,4 +1,4 @@
-"""Argparse-driven CLI: validate, score, retro."""
+"""Argparse-driven CLI: show, validate, score, retro."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from pathlib import Path
 from .loader import LoaderError, load_corpus
 from .score import ScoreError, ScoreWeights, score_quarter, write_ledger_row
 from .retro import from_ledger_row, print_retro, render
+from .show import show
 from .validator import validate
 
 
@@ -28,6 +29,18 @@ def build_parser() -> argparse.ArgumentParser:
         description="Validate, score, and roll up the typed pattern corpus.",
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sh = sub.add_parser(
+        "show",
+        help="Print a ranked transfer-signal table across the whole corpus.",
+    )
+    _add_root(sh)
+    sh.add_argument(
+        "--friction-weight",
+        type=float,
+        default=0.5,
+        help="Weight on transferred-with-friction (default: 0.5).",
+    )
 
     v = sub.add_parser("validate", help="Parse + schema-check + outcome rule.")
     _add_root(v)
@@ -64,6 +77,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     return parser
+
+
+def cmd_show(args: argparse.Namespace) -> int:
+    try:
+        weights = ScoreWeights(friction_weight=args.friction_weight)
+        text = show(args.root, weights=weights)
+    except LoaderError as e:
+        print(f"ERROR: show: {e}", file=sys.stderr)
+        return 2
+    sys.stdout.write(text)
+    return 0
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
@@ -126,6 +150,7 @@ def cmd_retro(args: argparse.Namespace) -> int:
 
 
 DISPATCH = {
+    "show": cmd_show,
     "validate": cmd_validate,
     "score": cmd_score,
     "retro": cmd_retro,

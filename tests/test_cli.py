@@ -20,6 +20,16 @@ def test_cli_validate_on_seed_corpus():
     assert r.returncode == 0, r.stdout + r.stderr
 
 
+def test_cli_show_no_arg():
+    r = _run("show")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "transfer signal" in r.stdout
+    assert "headline:" in r.stdout
+    # every seed pattern's name shows up in the ranked table
+    assert "Dual-source the critical path" in r.stdout
+    assert "transfer" in r.stdout and "strict" in r.stdout
+
+
 def test_cli_score_no_write(tmp_path: Path):
     r = _run("score", "--quarter", "2026-Q2", "--no-write")
     assert r.returncode == 0, r.stdout + r.stderr

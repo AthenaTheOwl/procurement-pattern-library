@@ -13,6 +13,7 @@ from .ledger import (
     write_jsonl_row,
 )
 from .report import render_report, write_report
+from .show import PatternRow, summarize, show
 
 __all__ = [
     "__version__",
@@ -36,4 +37,7 @@ __all__ = [
     "write_jsonl_row",
     "render_report",
     "write_report",
+    "PatternRow",
+    "summarize",
+    "show",
 ]

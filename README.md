@@ -39,20 +39,57 @@ patterns actually transferred.
 ## Status
 
 
-v0.1 shipped — runnable, minimal. The first real deliverable is in place; the next passes deepen it (more scenarios, real-data backfill). The entry command `python -m procurement_pattern_library validate` runs. See `specs/0002-design/` for the v0.1 scope and `STATUS.md` (where present) for the current state and next-feature queue.
+v0.1 shipped — runnable, minimal. The CLI ships `show`, `validate`,
+`score`, and `retro`; a Streamlit app browses the corpus (see
+[live demo](#live-demo)). The next passes deepen it (more patterns,
+real-data backfill). See `specs/` for scope and `STATUS.md` for the
+current state and next-feature queue.
 
 ## How to run
 
-Placeholder; will land in spec 0002. v0 ships the schema, the first
-three patterns, and a validator that confirms every pattern file is
-well-typed. No runtime is required to read the library.
+The CLI ships four verbs. The quickest look at the corpus:
 
-The eventual CLI shape (target for spec 0003):
+```
+python -m procurement_pattern_library show
+```
+
+`show` reads the committed corpus and prints a ranked transfer-signal
+table (one row per pattern, best-first) plus a one-line headline
+finding. Read-only, offline.
+
+The rest:
 
 ```
 python -m procurement_pattern_library validate
-python -m procurement_pattern_library retro --quarter 2026-Q3 --out retros/2026-Q3.md
+python -m procurement_pattern_library score --quarter 2026-Q2 --no-write
+python -m procurement_pattern_library retro --quarter 2026-Q2
 ```
+
+- `validate` parses every pattern + case file and checks it against the
+  schema and the outcome rule.
+- `score` computes the per-pattern transfer index for one quarter and
+  writes a ledger row (use `--no-write` to print instead).
+- `retro` prints a Markdown retro for a quarter.
+
+Run the tests with `python -m uv run pytest -q`.
+
+## live demo
+
+A Streamlit card-browser over the same corpus the `show` verb reads —
+a ranked transfer table, a friction-weight slider, and a per-pattern
+drill-down into its application cases.
+
+Run it locally:
+
+```
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+Deploy on Streamlit Community Cloud: repo `AthenaTheOwl/procurement-pattern-library`,
+branch `main`, main file `streamlit_app.py`.
+
+<!-- live url: (paste the Streamlit Cloud URL here once deployed) -->
 
 ## Layout
 
