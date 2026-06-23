@@ -38,10 +38,8 @@ patterns actually transferred.
 
 ## Status
 
-v0 scaffold; no implementation yet. The specs ledger names the first
-set of requirements (R-PPL-001 through R-PPL-010). The first PR after
-this scaffold lands the pattern schema and the first three patterns
-extracted from the existing decisions ledger.
+
+v0.1 shipped — runnable, minimal. The first real deliverable is in place; the next passes deepen it (more scenarios, real-data backfill). The entry command `python -m procurement_pattern_library validate` runs. See `specs/0002-design/` for the v0.1 scope and `STATUS.md` (where present) for the current state and next-feature queue.
 
 ## How to run
 
