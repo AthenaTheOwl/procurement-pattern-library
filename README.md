@@ -1,63 +1,41 @@
-# Procurement Pattern Library
+# procurement-pattern-library
 
-Typed library of supply-chain, negotiation, and mechanism-design patterns (dual-source, escalation clause, capacity reservation, RFQ scoring) with bi-directional links to how each has been re-applied in an AI build (model dual-source, fallback routing, eval-budget reservation).
+A bauxite supplier fed one LSE contract for three years. A routine audit found the supplier was itself single-sourced from one mine. The fix was a second contract at a fifteen-percent volume share — and two years later the same shape showed up again, as a fallback model kept warm by five percent of traffic when the primary endpoint went dark for ninety minutes. Same pattern. Different decade, different commodity. This library writes the pattern down once and tracks both ends.
 
-## What this is
+## What it does
 
-A typed Markdown library where each pattern is a file. A pattern names
-a principle from the procurement / supply-chain / mechanism-design
-world, sketches the canonical procurement application, and then carries
-a growing list of cross-applications: cases where the same principle
-showed up in an AI build.
+Each pattern is a file. It names a principle from the procurement, supply-chain, or mechanism-design world — dual-source the critical path, escalation clause for asymmetric exceptions, capacity reservation against contention windows — sketches the canonical procurement case, and then carries a typed list of application cases where the same principle resurfaced in an AI build.
 
-The pattern is the unit. Each pattern file has a structured front-
-matter block, a body, and a typed `applications/` subdirectory holding
-one application case per file. Each case carries an `outcome` field
-filled in ninety days after the case was opened.
+The two-way reading is the point. Designing a new system: which day-job patterns apply here? Mid-negotiation: which AI-build case sharpens the intuition? Every application case carries an `outcome` field — `transferred-cleanly`, `transferred-with-friction`, `still-pending` — filled in ninety days after the case opened, so a quarterly score can say which patterns actually transferred and which only looked like they would.
 
-The two-way reading is the point:
+v0.1 ships three seed patterns and six application cases, five of them scored. The corpus is small on purpose. The "rising did-not-transfer" signal needs roughly fifteen patterns before it means anything; until then the scorer is honest about working off a thin panel.
 
-- Designing a new AI system: which day-job patterns apply here?
-- In a procurement negotiation: which AI-build cases sharpen my
-  intuition about this class of problem?
+## Try it
 
-## Who uses it
-
-The user (Vignesh), as a personal-knowledge primitive. Outside readers
-who want to see how patterns transfer between the procurement and AI
-worlds. Eventually: a typed corpus that a mechanism-design assistant
-can ground on.
-
-## Why now
-
-The portfolio's CDCP operating model already names cross-domain
-transfer as the leverage axis. The decisions ledger has implicit
-cross-applications scattered through it. This repo extracts those
-into a typed library so a quarterly retrospective can score which
-patterns actually transferred.
-
-## Status
-
-
-v0.1 shipped — runnable, minimal. The CLI ships `show`, `validate`,
-`score`, and `retro`; a Streamlit app browses the corpus (see
-[live demo](#live-demo)). The next passes deepen it (more patterns,
-real-data backfill). See `specs/` for scope and `STATUS.md` for the
-current state and next-feature queue.
-
-## How to run
-
-The CLI ships four verbs. The quickest look at the corpus:
+The quickest look at the corpus. Reads the committed files, ranks patterns by transfer signal, offline:
 
 ```
 python -m procurement_pattern_library show
 ```
 
-`show` reads the committed corpus and prints a ranked transfer-signal
-table (one row per pattern, best-first) plus a one-line headline
-finding. Read-only, offline.
+```
+procurement pattern library - transfer signal across the corpus
+==============================================================
 
-The rest:
+3 pattern(s), 6 application case(s) (5 scored, 1 pending).
+
+   #  pattern                                          cases  transfer  strict
+  ----------------------------------------------------------------------------
+   1  Escalation clause for asymmetric exceptions          2      1.00    1.00
+   2  Capacity reservation against contention windows      2      0.75    0.50
+   3  Dual-source the critical path                        2      0.75    0.50
+
+headline: `escalation-clause` leads at transfer index 1.00 over 2 case(s).
+```
+
+`transfer` counts a friction transfer as half a clean one; `strict` counts it as zero. The gap between the two columns is where a pattern claimed it transferred but charged an integration tax to do it.
+
+The rest of the verbs:
 
 ```
 python -m procurement_pattern_library validate
@@ -65,21 +43,15 @@ python -m procurement_pattern_library score --quarter 2026-Q2 --no-write
 python -m procurement_pattern_library retro --quarter 2026-Q2
 ```
 
-- `validate` parses every pattern + case file and checks it against the
-  schema and the outcome rule.
-- `score` computes the per-pattern transfer index for one quarter and
-  writes a ledger row (use `--no-write` to print instead).
-- `retro` prints a Markdown retro for a quarter.
+- `validate` parses every pattern and case file against the schema and flags any case older than ninety days that still has an empty outcome.
+- `score` computes the per-pattern transfer index for one quarter and writes a ledger row (`--no-write` prints instead).
+- `retro` prints a Markdown retro for the quarter.
 
 Run the tests with `python -m uv run pytest -q`.
 
-## live demo
+## Live demo
 
-A Streamlit card-browser over the same corpus the `show` verb reads —
-a ranked transfer table, a friction-weight slider, and a per-pattern
-drill-down into its application cases.
-
-Run it locally:
+A Streamlit card-browser over the same corpus the `show` verb reads — the ranked transfer table, a friction-weight slider, and a per-pattern drill-down into its application cases. It reads the committed files; no network, no keys.
 
 ```
 pip install -r requirements.txt
@@ -91,31 +63,25 @@ branch `main`, main file `streamlit_app.py`.
 
 <!-- live url: (paste the Streamlit Cloud URL here once deployed) -->
 
+## How it connects
+
+The application cases point at where each pattern got re-applied. Those are real repos, and the links survive:
+
+- [athena-site](https://github.com/AthenaTheOwl/athena-site) — the model-routing fallback that mirrors the bauxite dual-source, friction and all.
+- [ai-field-brief](https://github.com/AthenaTheOwl/ai-field-brief) — the reviewer-escalation queue the escalation-clause pattern was used to design before it went live.
+- [supplier-risk-rag-agent](https://github.com/AthenaTheOwl/supplier-risk-rag-agent) — the eval-budget reservation that bought token capacity ahead of the contention window.
+- [negotiation-mechanism-replay](https://github.com/AthenaTheOwl/negotiation-mechanism-replay) — the mechanism-design neighbor: same procurement primitives, replayed as bargaining games.
+
 ## Layout
 
 ```
-procurement-pattern-library/
-  README.md
-  LICENSE
-  AGENTS.md
-  .gitignore
-  specs/
-    0001-foundation/
-      requirements.md
-      design.md
-      tasks.md
-      acceptance.md
-  docs/
-    first-pr.md
+procurement_pattern_library/    package: cli, loader, validator, scorer, retro, show
+patterns/<id>.md                one file per pattern
+patterns/<id>/applications/     typed application cases, one per file
+schemas/                        pattern, case, retro front-matter schemas
+ledger/runs/                    the checked-in transfer-score rows
+specs/  tests/  docs/  decisions/
 ```
-
-Future directories (named in specs, not created yet):
-
-- `patterns/<pattern-id>.md` — one file per pattern
-- `patterns/<pattern-id>/applications/<case-id>.md` — typed cases
-- `schemas/` — pattern, case, retro schemas
-- `retros/<quarter>.md` — quarterly retrospective reports
-- `src/procurement_pattern_library/` — validator and retro runner
 
 ## License
 
