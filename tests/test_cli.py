@@ -47,3 +47,15 @@ def test_cli_retro_from_ledger():
     assert r.returncode == 0, r.stdout + r.stderr
     assert "Retro" in r.stdout
     assert "dual-source" in r.stdout
+
+
+def test_cli_retro_from_missing_ledger_exits_2(tmp_path: Path):
+    r = _run(
+        "retro",
+        "--quarter",
+        "2026-Q2",
+        "--from-ledger",
+        str(tmp_path / "does-not-exist.md"),
+    )
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert r.stderr.startswith("ERROR: retro:")

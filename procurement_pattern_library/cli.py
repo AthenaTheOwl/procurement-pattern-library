@@ -136,15 +136,24 @@ def cmd_score(args: argparse.Namespace) -> int:
 
 
 def cmd_retro(args: argparse.Namespace) -> int:
-    if args.from_ledger:
-        result = from_ledger_row(args.from_ledger)
-    else:
-        try:
+    try:
+        if args.from_ledger:
+            # OSError covers a missing path, a directory in place of a file,
+            # or a permission problem; LoaderError covers a real file with
+            # no front-matter fence.
+            result = from_ledger_row(args.from_ledger)
+        else:
             corpus = load_corpus(args.root)
             result = score_quarter(corpus, args.quarter)
-        except (LoaderError, ScoreError) as e:
-            print(f"ERROR: retro: {e}", file=sys.stderr)
-            return 2
+    except (LoaderError, ScoreError) as e:
+        print(f"ERROR: retro: {e}", file=sys.stderr)
+        return 2
+    except OSError as e:
+        print(
+            f"ERROR: retro: cannot read ledger {args.from_ledger}: {e.strerror}",
+            file=sys.stderr,
+        )
+        return 2
     print_retro(result)
     return 0
 
