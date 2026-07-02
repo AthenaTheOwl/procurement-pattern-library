@@ -112,3 +112,51 @@ outcome: transferred-cleanly
     assert result.inputs["cases"] == 0
     by_id = {s.pattern_id: s for s in result.scores}
     assert by_id["alpha"].case_count == 0
+
+
+def test_quarter_membership_is_inclusive_at_both_edges(tmp_path: Path):
+    """Cases opened on the first/last day of Q2 count; one day outside does not.
+
+    Pins the inclusive comparison in _opened_in_quarter at both ends:
+    04-01 and 06-30 are in, 03-31 and 07-01 are out.
+    """
+    p = tmp_path / "patterns"
+    p.mkdir()
+    (p / "alpha.md").write_text(
+        """---
+id: alpha
+name: Alpha
+canonical_statement: x
+domains: [procurement]
+created_at: '2026-01-01'
+applications_dir: applications/
+---
+""",
+        encoding="utf-8",
+    )
+    apps = p / "alpha" / "applications"
+    apps.mkdir(parents=True)
+    for cid, opened in [
+        ("before", "2026-03-31"),
+        ("start", "2026-04-01"),
+        ("end", "2026-06-30"),
+        ("after", "2026-07-01"),
+    ]:
+        (apps / f"{cid}.md").write_text(
+            f"""---
+id: {cid}
+pattern_id: alpha
+domain: procurement
+upstream_artifact: repo://x/y.md
+opened_at: '{opened}'
+outcome: transferred-cleanly
+---
+""",
+            encoding="utf-8",
+        )
+    corpus = load_corpus(tmp_path)
+    result = score_quarter(corpus, "2026-Q2")
+    # only the two boundary cases fall inside the quarter
+    assert result.inputs["cases"] == 2
+    by_id = {s.pattern_id: s for s in result.scores}
+    assert by_id["alpha"].case_count == 2
