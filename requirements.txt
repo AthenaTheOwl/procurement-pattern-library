@@ -1,3 +1,7 @@
 streamlit>=1.40
 pandas>=2.0
 .
+
+# required by scripts/validate_data_conformance.py (DEC: data-conformance gate)
+jsonschema
+pyyaml
