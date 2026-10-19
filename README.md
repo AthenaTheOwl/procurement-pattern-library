@@ -83,10 +83,10 @@ ledger/runs/                    the checked-in transfer-score rows
 specs/  tests/  docs/  decisions/
 ```
 
-## License
-
-MIT. See [LICENSE](LICENSE).
-
 ## Method update
 
 [October method update: Test a transfer before learning its outcome](docs/prospective-transfer-review.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
