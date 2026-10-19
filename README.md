@@ -72,6 +72,8 @@ The application cases point at where each pattern got re-applied. Those are real
 - [supplier-risk-rag-agent](https://github.com/AthenaTheOwl/supplier-risk-rag-agent) — the eval-budget reservation that bought token capacity ahead of the contention window.
 - [negotiation-mechanism-replay](https://github.com/AthenaTheOwl/negotiation-mechanism-replay) — the mechanism-design neighbor: same procurement primitives, replayed as bargaining games.
 
+Not every `upstream_artifact` resolves from the public portfolio. The three procurement-side cases (`lse-bauxite-2023`, `long-tail-vendor-2024`, `q4-warehouse-prebook-2025`) cite `repo://decisions-ledger/...`, a decisions ledger that is not in the public portfolio; treat those references as private, external provenance that a public checkout cannot resolve. The decision files the three ai-build cases cite (`DEC-AS-042`, `DEC-AFB-017`, `DEC-SRRA-022`) are not present in the public athena-site, ai-field-brief and supplier-risk-rag-agent repos as of 2026-10-19; the repo links above resolve, those file paths do not.
+
 ## Layout
 
 ```
