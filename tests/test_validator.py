@@ -258,3 +258,74 @@ def test_checked_in_corpus_validates():
     corpus = load_corpus(root)
     result = validate(corpus, today=date(2026, 6, 22))
     assert result.ok, [f"{i.path}: {i.message}" for i in result.errors]
+
+
+PROSPECTIVE_CASE = {
+    "id": "fallback-drill",
+    "pattern_id": "dual-source",
+    "domain": "ai-build",
+    "upstream_artifact": "repo://x/y.md",
+    "opened_at": "2026-10-01",
+    "expected_mechanism": "A warm fallback absorbs a primary outage.",
+    "failure_context": "Fallback output shape diverges from the primary.",
+    "disconfirming_result": "Held-out case misses the quality threshold on failover.",
+    "observation_window_days": 60,
+}
+
+
+def _case_schema_validator():
+    import json
+
+    from jsonschema import Draft202012Validator
+
+    root = Path(__file__).resolve().parent.parent
+    schema = json.loads((root / "schemas" / "case.schema.json").read_text("utf-8"))
+    return Draft202012Validator(schema)
+
+
+def test_case_schema_accepts_optional_prospective_fields():
+    validator = _case_schema_validator()
+    assert list(validator.iter_errors(PROSPECTIVE_CASE)) == []
+    required = ("id", "pattern_id", "domain", "upstream_artifact", "opened_at")
+    legacy = {k: PROSPECTIVE_CASE[k] for k in required}
+    assert list(validator.iter_errors(legacy)) == []
+
+
+@pytest.mark.parametrize("window", [0, 91, "60"])
+def test_case_schema_caps_observation_window_at_ninety(window):
+    record = dict(PROSPECTIVE_CASE, observation_window_days=window)
+    assert list(_case_schema_validator().iter_errors(record))
+
+
+def _prospective_corpus(tmp_path: Path, extra: str) -> Path:
+    root = _pending_case_corpus(tmp_path, date(2026, 10, 1))
+    case = root / "patterns" / "alpha" / "applications" / "pending.md"
+    head, rest = case.read_text("utf-8").split("\n", 1)
+    case.write_text(f"{head}\n{extra}{rest}", encoding="utf-8")
+    return root
+
+
+def test_validator_accepts_prospective_fields(tmp_path: Path):
+    root = _prospective_corpus(
+        tmp_path,
+        "expected_mechanism: warm fallback absorbs outage\n"
+        "failure_context: output shapes diverge\n"
+        "disconfirming_result: held-out case misses threshold\n"
+        "observation_window_days: 90\n",
+    )
+    result = validate(load_corpus(root), today=date(2026, 10, 19))
+    assert result.ok, [i.message for i in result.errors]
+
+
+@pytest.mark.parametrize(
+    ("extra", "needle"),
+    [
+        ("observation_window_days: 120\n", "observation_window_days"),
+        ("observation_window_days: true\n", "observation_window_days"),
+        ("expected_mechanism: ''\n", "expected_mechanism"),
+    ],
+)
+def test_validator_rejects_bad_prospective_fields(tmp_path: Path, extra: str, needle: str):
+    root = _prospective_corpus(tmp_path, extra)
+    result = validate(load_corpus(root), today=date(2026, 10, 19))
+    assert any(needle in i.message for i in result.errors)

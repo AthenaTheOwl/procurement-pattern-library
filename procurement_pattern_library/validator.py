@@ -24,6 +24,9 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 OUTCOME_WINDOW_DAYS = 90
 OUTCOME_RULE = "ninety-day outcome rule (DEC-PPL-001)"
+# Optional front-matter a prospective case states before its outcome is
+# known (docs/prospective-transfer-review.md). Absent is always fine.
+PROSPECTIVE_TEXT_FIELDS = ("expected_mechanism", "failure_context", "disconfirming_result")
 # Outcomes that do not record a measured result. Past the window these
 # count as unresolved, the same as an empty outcome (DEC-PPL-001).
 PLACEHOLDER_OUTCOMES = {
@@ -224,6 +227,23 @@ def _validate_case(
     outcome = fm.get("outcome")
     if outcome is not None and outcome not in OUTCOME_ENUM:
         result.add("error", c.path, f"outcome {outcome!r} not in enum {sorted(OUTCOME_ENUM)}")
+
+    for name in PROSPECTIVE_TEXT_FIELDS:
+        if name in fm and (not isinstance(fm[name], str) or not fm[name].strip()):
+            result.add("error", c.path, f"{name} must be a non-empty string when present")
+    if "observation_window_days" in fm:
+        window = fm["observation_window_days"]
+        if (
+            isinstance(window, bool)
+            or not isinstance(window, int)
+            or not 1 <= window <= OUTCOME_WINDOW_DAYS
+        ):
+            result.add(
+                "error",
+                c.path,
+                f"observation_window_days must be an integer from 1 to {OUTCOME_WINDOW_DAYS}, "
+                f"got {window!r}",
+            )
 
     opened_date = _coerce_date(opened)
     if opened_date is not None:
