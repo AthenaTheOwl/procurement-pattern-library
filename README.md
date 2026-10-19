@@ -43,7 +43,7 @@ python -m procurement_pattern_library score --quarter 2026-Q2 --no-write
 python -m procurement_pattern_library retro --quarter 2026-Q2
 ```
 
-- `validate` parses every pattern and case file against the schema and flags any case older than ninety days that still has an empty outcome.
+- `validate` parses every pattern and case file against the schema and flags any case older than ninety days whose outcome is still empty or `still-pending`.
 - `score` computes the per-pattern transfer index for one quarter and writes a ledger row (`--no-write` prints instead).
 - `retro` prints a Markdown retro for the quarter.
 

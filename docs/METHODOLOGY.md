@@ -78,7 +78,8 @@ land or be quietly abandoned, and short enough that the library does
 not accumulate ambiguous rows.
 
 The validator reads `opened_at`, compares to today, and fails if the
-difference exceeds ninety days and `outcome` is empty. Cases opened
+difference exceeds ninety days and `outcome` is empty, `still-pending`
+or another placeholder word such as `pending` or `tbd`. Cases opened
 within the last ninety days with an empty outcome are silently
 accepted; the scorer treats them as `still-pending`.
 

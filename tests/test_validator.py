@@ -1,11 +1,13 @@
 from datetime import date, timedelta
 from pathlib import Path
 
+import pytest
+
 from procurement_pattern_library.loader import load_corpus
-from procurement_pattern_library.validator import validate
+from procurement_pattern_library.validator import OUTCOME_RULE, validate
 
 
-def _pending_case_corpus(tmp_path: Path, opened: date) -> Path:
+def _pending_case_corpus(tmp_path: Path, opened: date, outcome: str | None = None) -> Path:
     """A one-pattern corpus with a single pending case opened on `opened`."""
     (tmp_path / "patterns").mkdir(parents=True)
     (tmp_path / "patterns" / "alpha.md").write_text(
@@ -29,6 +31,7 @@ pattern_id: alpha
 domain: procurement
 upstream_artifact: repo://x/y.md
 opened_at: '{opened.isoformat()}'
+{"" if outcome is None else f"outcome: '{outcome}'"}
 ---
 """,
         encoding="utf-8",
@@ -209,6 +212,44 @@ def test_window_length_is_ninety_days(tmp_path: Path):
     under = _pending_case_corpus(tmp_path / "under", today - timedelta(days=89))
     under_result = validate(load_corpus(under), today=today)
     assert under_result.ok, [i.message for i in under_result.errors]
+
+
+@pytest.mark.parametrize("outcome", ["still-pending", "pending", "TBD", "unknown", "n/a"])
+@pytest.mark.parametrize(("age_days", "flags"), [(89, False), (90, False), (91, True)])
+def test_placeholder_outcome_counts_as_pending(tmp_path: Path, outcome: str, age_days: int, flags: bool):
+    """`still-pending` or a placeholder word past the window fails like an empty outcome.
+
+    DEC-PPL-001: a pending case older than ninety days is an invariant
+    violation, not a retro entry. 89 and 90 days pass; 91 days fails.
+    """
+    today = date(2026, 10, 19)
+    root = _pending_case_corpus(tmp_path, today - timedelta(days=age_days), outcome=outcome)
+    rule_errors = [
+        i for i in validate(load_corpus(root), today=today).errors if OUTCOME_RULE in i.message
+    ]
+    if flags:
+        assert len(rule_errors) == 1
+        assert f"{age_days} days ago" in rule_errors[0].message
+        assert repr(outcome) in rule_errors[0].message
+    else:
+        assert rule_errors == []
+
+
+def test_measured_outcome_past_window_does_not_flag(tmp_path: Path):
+    today = date(2026, 10, 19)
+    root = _pending_case_corpus(
+        tmp_path, today - timedelta(days=150), outcome="transferred-with-friction"
+    )
+    result = validate(load_corpus(root), today=today)
+    assert result.ok, [i.message for i in result.errors]
+
+
+def test_empty_outcome_error_names_the_rule(tmp_path: Path):
+    """scripts/validate_outcomes.py selects errors by OUTCOME_RULE."""
+    today = date(2026, 10, 19)
+    root = _pending_case_corpus(tmp_path, today - timedelta(days=91))
+    result = validate(load_corpus(root), today=today)
+    assert any(OUTCOME_RULE in i.message and "empty outcome" in i.message for i in result.errors)
 
 
 def test_checked_in_corpus_validates():

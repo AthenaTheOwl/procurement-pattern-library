@@ -23,6 +23,21 @@ ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 OUTCOME_WINDOW_DAYS = 90
+OUTCOME_RULE = "ninety-day outcome rule (DEC-PPL-001)"
+# Outcomes that do not record a measured result. Past the window these
+# count as unresolved, the same as an empty outcome (DEC-PPL-001).
+PLACEHOLDER_OUTCOMES = {
+    "still-pending",
+    "pending",
+    "tbd",
+    "todo",
+    "unknown",
+    "n/a",
+    "na",
+    "none",
+    "null",
+    "?",
+}
 
 
 @dataclass(frozen=True)
@@ -213,12 +228,25 @@ def _validate_case(
     opened_date = _coerce_date(opened)
     if opened_date is not None:
         age = today - opened_date
-        if age > timedelta(days=OUTCOME_WINDOW_DAYS) and not outcome:
+        if age > timedelta(days=OUTCOME_WINDOW_DAYS) and _outcome_unresolved(outcome):
+            shown = "empty outcome" if _is_blank(outcome) else f"outcome {outcome!r}"
             result.add(
                 "error",
                 c.path,
-                f"case opened {age.days} days ago has empty outcome (limit {OUTCOME_WINDOW_DAYS})",
+                f"{OUTCOME_RULE}: case opened {age.days} days ago still has {shown} "
+                f"(limit {OUTCOME_WINDOW_DAYS}); record the measured outcome",
             )
+
+
+def _is_blank(outcome: Any) -> bool:
+    return not (outcome.strip() if isinstance(outcome, str) else outcome)
+
+
+def _outcome_unresolved(outcome: Any) -> bool:
+    """True when the outcome is empty or a placeholder, not a measured result."""
+    if _is_blank(outcome):
+        return True
+    return isinstance(outcome, str) and outcome.strip().lower() in PLACEHOLDER_OUTCOMES
 
 
 def validate(corpus: Corpus, schemas: SchemaSet | None = None, today: date | None = None) -> ValidationResult:

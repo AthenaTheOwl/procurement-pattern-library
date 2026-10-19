@@ -10,13 +10,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from procurement_pattern_library.loader import load_corpus  # noqa: E402
-from procurement_pattern_library.validator import validate  # noqa: E402
+from procurement_pattern_library.validator import OUTCOME_RULE, validate  # noqa: E402
 
 
 def main() -> int:
     corpus = load_corpus(REPO_ROOT)
     result = validate(corpus, today=date.today())
-    outcome_errors = [i for i in result.errors if "empty outcome" in i.message]
+    outcome_errors = [i for i in result.errors if OUTCOME_RULE in i.message]
     for issue in outcome_errors:
         rel = issue.path
         try:

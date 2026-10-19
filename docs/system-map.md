@@ -55,7 +55,8 @@ repo is a typed corpus and a thin CLI, not an application.
 2. The validator takes the loader output and checks each parsed
    front-matter against the schema in `schemas/`. It also applies
    the ninety-day outcome rule: any case with `opened_at` older
-   than ninety days from today and an empty `outcome` is an error.
+   than ninety days from today and an empty or `still-pending`
+   `outcome` is an error.
 3. The scorer takes the loader output, filters cases to the named
    quarter, and computes a per-pattern transfer index. The output
    is a list of `PatternScore` records and a summary, written to

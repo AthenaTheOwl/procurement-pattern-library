@@ -17,8 +17,11 @@ state`, `## Known limits`, and `## Next feature queue`.
   `score`, `retro`.
 - `validate` walks `patterns/` and `decisions/`, parses every
   Markdown file's front-matter, checks it against the schema, and
-  flags any application case older than ninety days with an empty
-  outcome. Exits zero on the seed corpus.
+  flags any application case older than ninety days whose outcome is
+  empty, `still-pending` or another placeholder. As of 2026-10-19 it
+  fails on `escalation-clause/reviewer-escalation-ai-field-brief`,
+  opened 2026-05-22 and still pending; its measured outcome needs
+  recording.
 - `score` computes a per-pattern transfer index over a named
   quarter and writes a structured ledger row at
   `ledger/runs/<run-id>.md`. The first row,
