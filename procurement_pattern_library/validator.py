@@ -23,6 +23,13 @@ ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 OUTCOME_WINDOW_DAYS = 90
+OUTCOME_RULE = "ninety-day outcome rule (DEC-PPL-001)"
+# Optional front-matter a prospective case states before its outcome is
+# known (docs/prospective-transfer-review.md). Absent is always fine.
+PROSPECTIVE_TEXT_FIELDS = ("expected_mechanism", "failure_context", "disconfirming_result")
+# The enum value that does not record a measured result. Past the window
+# it counts as unresolved, the same as an empty outcome (DEC-PPL-001).
+PENDING_OUTCOME = "still-pending"
 
 
 @dataclass(frozen=True)
@@ -210,15 +217,43 @@ def _validate_case(
     if outcome is not None and outcome not in OUTCOME_ENUM:
         result.add("error", c.path, f"outcome {outcome!r} not in enum {sorted(OUTCOME_ENUM)}")
 
-    opened_date = _coerce_date(opened)
-    if opened_date is not None:
-        age = today - opened_date
-        if age > timedelta(days=OUTCOME_WINDOW_DAYS) and not outcome:
+    for name in PROSPECTIVE_TEXT_FIELDS:
+        if name in fm and (not isinstance(fm[name], str) or not fm[name].strip()):
+            result.add("error", c.path, f"{name} must be a non-empty string when present")
+    if "observation_window_days" in fm:
+        window = fm["observation_window_days"]
+        # Match the schema's "integer" type, which accepts integral floats (60.0).
+        integral = isinstance(window, int) or (isinstance(window, float) and window.is_integer())
+        if isinstance(window, bool) or not integral or not 1 <= window <= OUTCOME_WINDOW_DAYS:
             result.add(
                 "error",
                 c.path,
-                f"case opened {age.days} days ago has empty outcome (limit {OUTCOME_WINDOW_DAYS})",
+                f"observation_window_days must be an integer from 1 to {OUTCOME_WINDOW_DAYS}, "
+                f"got {window!r}",
             )
+
+    opened_date = _coerce_date(opened)
+    if opened_date is not None:
+        age = today - opened_date
+        if age > timedelta(days=OUTCOME_WINDOW_DAYS) and _outcome_unresolved(outcome):
+            shown = "empty outcome" if _is_blank(outcome) else f"outcome {outcome!r}"
+            result.add(
+                "error",
+                c.path,
+                f"{OUTCOME_RULE}: case opened {age.days} days ago still has {shown} "
+                f"(limit {OUTCOME_WINDOW_DAYS}); record the measured outcome",
+            )
+
+
+def _is_blank(outcome: Any) -> bool:
+    return not (outcome.strip() if isinstance(outcome, str) else outcome)
+
+
+def _outcome_unresolved(outcome: Any) -> bool:
+    """True when the outcome is empty or `still-pending`, not a measured result."""
+    if _is_blank(outcome):
+        return True
+    return isinstance(outcome, str) and outcome.strip() == PENDING_OUTCOME
 
 
 def validate(corpus: Corpus, schemas: SchemaSet | None = None, today: date | None = None) -> ValidationResult:

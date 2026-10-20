@@ -36,6 +36,27 @@
         "still-pending",
         null
       ]
+    },
+    "expected_mechanism": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional, written before the outcome is known: why the pattern should transfer."
+    },
+    "failure_context": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional: the context where the transfer is expected to break."
+    },
+    "disconfirming_result": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional: an observable result that would show the transfer failed."
+    },
+    "observation_window_days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Optional: planned observation window, inside the ninety-day outcome rule (DEC-PPL-001)."
     }
   }
 }

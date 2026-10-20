@@ -29,7 +29,7 @@ downstream spec, decision, and gate.
   portfolio.
 - **R-PPL-007** `outcome` is optional at case creation. A case
   becomes invalid if it is older than ninety days and the outcome
-  is still empty. `outcome` is an enum: `transferred-cleanly`,
+  is still empty or `still-pending`. `outcome` is an enum: `transferred-cleanly`,
   `transferred-with-friction`, `did-not-transfer`, `still-pending`.
 
 ## Retros
