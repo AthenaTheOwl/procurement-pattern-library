@@ -8,7 +8,7 @@ Each pattern is a file. It names a principle from the procurement, supply-chain,
 
 The two-way reading is the point. Designing a new system: which day-job patterns apply here? Mid-negotiation: which AI-build case sharpens the intuition? Every application case carries an `outcome` field — `transferred-cleanly`, `transferred-with-friction`, `still-pending` — filled in ninety days after the case opened, so a quarterly score can say which patterns actually transferred and which only looked like they would.
 
-v0.1 ships three seed patterns and six application cases, five of them scored. The corpus is small on purpose. The "rising did-not-transfer" signal needs roughly fifteen patterns before it means anything; until then the scorer is honest about working off a thin panel.
+v0.1 ships three seed patterns and five application cases, all of them scored. The corpus is small on purpose. The "rising did-not-transfer" signal needs roughly fifteen patterns before it means anything; until then the scorer is honest about working off a thin panel.
 
 ## Try it
 
@@ -68,11 +68,10 @@ branch `main`, main file `streamlit_app.py`.
 The application cases point at where each pattern got re-applied. Those are real repos, and the links survive:
 
 - [athena-site](https://github.com/AthenaTheOwl/athena-site) — the model-routing fallback that mirrors the bauxite dual-source, friction and all.
-- [ai-field-brief](https://github.com/AthenaTheOwl/ai-field-brief) — the reviewer-escalation queue the escalation-clause pattern was used to design before it went live.
 - [supplier-risk-rag-agent](https://github.com/AthenaTheOwl/supplier-risk-rag-agent) — the eval-budget reservation that bought token capacity ahead of the contention window.
 - [negotiation-mechanism-replay](https://github.com/AthenaTheOwl/negotiation-mechanism-replay) — the mechanism-design neighbor: same procurement primitives, replayed as bargaining games.
 
-Not every `upstream_artifact` resolves from the public portfolio. The three procurement-side cases (`lse-bauxite-2023`, `long-tail-vendor-2024`, `q4-warehouse-prebook-2025`) cite `repo://decisions-ledger/...`, a decisions ledger that is not in the public portfolio; treat those references as private, external provenance that a public checkout cannot resolve. The decision files the three ai-build cases cite (`DEC-AS-042`, `DEC-AFB-017`, `DEC-SRRA-022`) are not present in the public athena-site, ai-field-brief and supplier-risk-rag-agent repos as of 2026-10-19; the repo links above resolve, those file paths do not.
+Not every `upstream_artifact` resolves from the public portfolio. The three procurement-side cases (`lse-bauxite-2023`, `long-tail-vendor-2024`, `q4-warehouse-prebook-2025`) cite `repo://decisions-ledger/...`, a decisions ledger that is not in the public portfolio; treat those references as private, external provenance that a public checkout cannot resolve. The decision files the two ai-build cases cite (`DEC-AS-042`, `DEC-SRRA-022`) are not present in the public athena-site and supplier-risk-rag-agent repos as of 2026-10-20; the repo links above resolve, those file paths do not. A third ai-build case, `reviewer-escalation-ai-field-brief`, was retired on 2026-10-20: it passed the ninety-day window still pending, and the decision and review queue it described (`DEC-AFB-017`) were never built in ai-field-brief, so there was no outcome to measure.
 
 ## Layout
 

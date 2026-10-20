@@ -8,8 +8,10 @@ state`, `## Known limits`, and `## Next feature queue`.
 ## Current state
 
 - Three seed patterns are checked in: `dual-source`,
-  `escalation-clause`, `capacity-reservation`. Each carries two
-  typed application cases (one procurement, one ai-build).
+  `escalation-clause`, `capacity-reservation`. `dual-source` and
+  `capacity-reservation` each carry two typed application cases
+  (one procurement, one ai-build); `escalation-clause` carries its
+  procurement case only.
 - Schemas for pattern, case, and retro front-matter live under
   `schemas/` and are loaded by the validator at startup.
 - The Python CLI is runnable via `python -m
@@ -18,10 +20,12 @@ state`, `## Known limits`, and `## Next feature queue`.
 - `validate` walks `patterns/`, parses every pattern and case file's
   front-matter, hand-checks the schema rules (see Known limits), and
   flags any application case older than ninety days whose outcome is
-  empty or `still-pending`. As of 2026-10-19 it
-  fails on `escalation-clause/reviewer-escalation-ai-field-brief`,
-  opened 2026-05-22 and still pending; its measured outcome needs
-  recording.
+  empty or `still-pending`. The one case that crossed that line,
+  `escalation-clause/reviewer-escalation-ai-field-brief` (opened
+  2026-05-22), was retired on 2026-10-20: the ai-field-brief
+  decision and review queue it described were never built, so no
+  outcome could be measured. `validate` passes on the remaining five
+  cases.
 - `score` computes a per-pattern transfer index over a named
   quarter and writes a structured ledger row at
   `ledger/runs/<run-id>.md`. The first row,
