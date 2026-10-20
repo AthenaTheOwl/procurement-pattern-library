@@ -27,20 +27,9 @@ OUTCOME_RULE = "ninety-day outcome rule (DEC-PPL-001)"
 # Optional front-matter a prospective case states before its outcome is
 # known (docs/prospective-transfer-review.md). Absent is always fine.
 PROSPECTIVE_TEXT_FIELDS = ("expected_mechanism", "failure_context", "disconfirming_result")
-# Outcomes that do not record a measured result. Past the window these
-# count as unresolved, the same as an empty outcome (DEC-PPL-001).
-PLACEHOLDER_OUTCOMES = {
-    "still-pending",
-    "pending",
-    "tbd",
-    "todo",
-    "unknown",
-    "n/a",
-    "na",
-    "none",
-    "null",
-    "?",
-}
+# The enum value that does not record a measured result. Past the window
+# it counts as unresolved, the same as an empty outcome (DEC-PPL-001).
+PENDING_OUTCOME = "still-pending"
 
 
 @dataclass(frozen=True)
@@ -233,11 +222,9 @@ def _validate_case(
             result.add("error", c.path, f"{name} must be a non-empty string when present")
     if "observation_window_days" in fm:
         window = fm["observation_window_days"]
-        if (
-            isinstance(window, bool)
-            or not isinstance(window, int)
-            or not 1 <= window <= OUTCOME_WINDOW_DAYS
-        ):
+        # Match the schema's "integer" type, which accepts integral floats (60.0).
+        integral = isinstance(window, int) or (isinstance(window, float) and window.is_integer())
+        if isinstance(window, bool) or not integral or not 1 <= window <= OUTCOME_WINDOW_DAYS:
             result.add(
                 "error",
                 c.path,
@@ -263,10 +250,10 @@ def _is_blank(outcome: Any) -> bool:
 
 
 def _outcome_unresolved(outcome: Any) -> bool:
-    """True when the outcome is empty or a placeholder, not a measured result."""
+    """True when the outcome is empty or `still-pending`, not a measured result."""
     if _is_blank(outcome):
         return True
-    return isinstance(outcome, str) and outcome.strip().lower() in PLACEHOLDER_OUTCOMES
+    return isinstance(outcome, str) and outcome.strip() == PENDING_OUTCOME
 
 
 def validate(corpus: Corpus, schemas: SchemaSet | None = None, today: date | None = None) -> ValidationResult:

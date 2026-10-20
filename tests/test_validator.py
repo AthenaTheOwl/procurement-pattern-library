@@ -214,25 +214,23 @@ def test_window_length_is_ninety_days(tmp_path: Path):
     assert under_result.ok, [i.message for i in under_result.errors]
 
 
-@pytest.mark.parametrize("outcome", ["still-pending", "pending", "TBD", "unknown", "n/a"])
 @pytest.mark.parametrize(("age_days", "flags"), [(89, False), (90, False), (91, True)])
-def test_placeholder_outcome_counts_as_pending(tmp_path: Path, outcome: str, age_days: int, flags: bool):
-    """`still-pending` or a placeholder word past the window fails like an empty outcome.
+def test_still_pending_counts_as_unresolved(tmp_path: Path, age_days: int, flags: bool):
+    """`still-pending` past the window fails like an empty outcome.
 
     DEC-PPL-001: a pending case older than ninety days is an invariant
     violation, not a retro entry. 89 and 90 days pass; 91 days fails.
     """
     today = date(2026, 10, 19)
-    root = _pending_case_corpus(tmp_path, today - timedelta(days=age_days), outcome=outcome)
-    rule_errors = [
-        i for i in validate(load_corpus(root), today=today).errors if OUTCOME_RULE in i.message
-    ]
+    root = _pending_case_corpus(tmp_path, today - timedelta(days=age_days), outcome="still-pending")
+    result = validate(load_corpus(root), today=today)
     if flags:
-        assert len(rule_errors) == 1
-        assert f"{age_days} days ago" in rule_errors[0].message
-        assert repr(outcome) in rule_errors[0].message
+        assert len(result.errors) == 1
+        assert OUTCOME_RULE in result.errors[0].message
+        assert f"{age_days} days ago" in result.errors[0].message
+        assert "'still-pending'" in result.errors[0].message
     else:
-        assert rule_errors == []
+        assert result.ok, [i.message for i in result.errors]
 
 
 def test_measured_outcome_past_window_does_not_flag(tmp_path: Path):
@@ -291,10 +289,15 @@ def test_case_schema_accepts_optional_prospective_fields():
     assert list(validator.iter_errors(legacy)) == []
 
 
-@pytest.mark.parametrize("window", [0, 91, "60"])
-def test_case_schema_caps_observation_window_at_ninety(window):
+@pytest.mark.parametrize(
+    ("window", "keyword"), [(0, "minimum"), (91, "maximum"), ("60", "type")]
+)
+def test_case_schema_caps_observation_window_at_ninety(window, keyword):
+    validator = _case_schema_validator()
+    assert list(validator.iter_errors(dict(PROSPECTIVE_CASE, observation_window_days=60))) == []
     record = dict(PROSPECTIVE_CASE, observation_window_days=window)
-    assert list(_case_schema_validator().iter_errors(record))
+    errors = [(e.validator, list(e.path)) for e in validator.iter_errors(record)]
+    assert errors == [(keyword, ["observation_window_days"])]
 
 
 def _prospective_corpus(tmp_path: Path, extra: str) -> Path:
@@ -317,11 +320,21 @@ def test_validator_accepts_prospective_fields(tmp_path: Path):
     assert result.ok, [i.message for i in result.errors]
 
 
+def test_validator_accepts_integral_float_window_like_schema(tmp_path: Path):
+    """The schema's integer type accepts 60.0, so the validator does too."""
+    record = dict(PROSPECTIVE_CASE, observation_window_days=60.0)
+    assert list(_case_schema_validator().iter_errors(record)) == []
+    root = _prospective_corpus(tmp_path, "observation_window_days: 60.0\n")
+    result = validate(load_corpus(root), today=date(2026, 10, 19))
+    assert result.ok, [i.message for i in result.errors]
+
+
 @pytest.mark.parametrize(
     ("extra", "needle"),
     [
         ("observation_window_days: 120\n", "observation_window_days"),
         ("observation_window_days: true\n", "observation_window_days"),
+        ("observation_window_days: 60.5\n", "observation_window_days"),
         ("expected_mechanism: ''\n", "expected_mechanism"),
     ],
 )
