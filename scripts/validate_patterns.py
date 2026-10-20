@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(REPO_ROOT))
 
 from procurement_pattern_library.loader import load_corpus  # noqa: E402
 from procurement_pattern_library.validator import validate  # noqa: E402

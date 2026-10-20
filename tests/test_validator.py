@@ -342,3 +342,22 @@ def test_validator_rejects_bad_prospective_fields(tmp_path: Path, extra: str, ne
     root = _prospective_corpus(tmp_path, extra)
     result = validate(load_corpus(root), today=date(2026, 10, 19))
     assert any(needle in i.message for i in result.errors)
+
+
+def _validate_outcomes_main():
+    import importlib.util
+
+    script = Path(__file__).resolve().parent.parent / "scripts" / "validate_outcomes.py"
+    spec = importlib.util.spec_from_file_location("validate_outcomes", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.main
+
+
+@pytest.mark.parametrize(("age_days", "rc"), [(90, 0), (91, 1)])
+def test_validate_outcomes_script_fails_still_pending_past_window(
+    tmp_path: Path, age_days: int, rc: int
+):
+    today = date(2026, 10, 19)
+    root = _pending_case_corpus(tmp_path, today - timedelta(days=age_days), outcome="still-pending")
+    assert _validate_outcomes_main()(root, today=today) == rc
