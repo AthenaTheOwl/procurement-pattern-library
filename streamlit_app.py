@@ -175,8 +175,9 @@ with ic2:
         value=date(2026, 6, 22),
     )
     st.caption(
-        "a case opened more than 90 days before this date with an empty "
-        "`outcome` is an error — that is the rule the validator enforces."
+        "a case opened more than 90 days before this date with an empty or "
+        "`still-pending` `outcome` is an error — that is the rule the "
+        "validator enforces."
     )
     st.markdown("**known pattern ids**")
     st.write(pattern_ids or "(none)")

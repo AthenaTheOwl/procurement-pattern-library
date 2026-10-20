@@ -58,7 +58,7 @@ checks the `upstream_artifact` URI scheme is one of `repo://`,
 URI; that is left to a future check.
 
 `validate_outcomes.py` walks all cases and flags any older than
-ninety days with an empty `outcome`.
+ninety days with an empty or `still-pending` `outcome`.
 
 ## Retro renderer
 

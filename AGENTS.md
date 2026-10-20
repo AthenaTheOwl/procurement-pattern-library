@@ -46,7 +46,7 @@ Planned local gates before pushing:
 - `validate_patterns.py` — every pattern file is well-typed; every
   application case parses and points at a real upstream artifact
 - `validate_outcomes.py` — every case older than ninety days has a
-  filled outcome field
+  measured outcome (not empty or `still-pending`)
 
 ## Out of scope
 

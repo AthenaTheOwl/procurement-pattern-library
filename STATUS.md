@@ -15,10 +15,10 @@ state`, `## Known limits`, and `## Next feature queue`.
 - The Python CLI is runnable via `python -m
   procurement_pattern_library` with three subcommands: `validate`,
   `score`, `retro`.
-- `validate` walks `patterns/` and `decisions/`, parses every
-  Markdown file's front-matter, checks it against the schema, and
+- `validate` walks `patterns/`, parses every pattern and case file's
+  front-matter, hand-checks the schema rules (see Known limits), and
   flags any application case older than ninety days whose outcome is
-  empty, `still-pending` or another placeholder. As of 2026-10-19 it
+  empty or `still-pending`. As of 2026-10-19 it
   fails on `escalation-clause/reviewer-escalation-ai-field-brief`,
   opened 2026-05-22 and still pending; its measured outcome needs
   recording.
